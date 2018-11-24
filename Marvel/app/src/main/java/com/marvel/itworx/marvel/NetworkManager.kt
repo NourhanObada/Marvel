@@ -20,7 +20,6 @@ class NetworkManager(context: Context) {
     fun requestListContent(onSuccess: (ArrayList<Character>) -> Unit, onError: (RequestError) -> Unit) {
         val (apiPublicKey, hashString) = prepareApiUrl()
         val apiURL = "$baseUrl?ts=$timeStamp&apikey=$apiPublicKey&hash=$hashString&limit=20"
-        println(apiURL)
         val apiJSONRequest = JsonObjectRequest(Request.Method.GET, apiURL, null, Response.Listener { response ->
             handleListSuccessResponse(response, onSuccess)
         }, Response.ErrorListener { error ->
