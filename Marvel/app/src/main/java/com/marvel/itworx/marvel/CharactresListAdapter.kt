@@ -11,8 +11,10 @@ import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.marvel.itworx.marvel.data.Character
 
-class CharactersListAdapter(private val charactersList: ArrayList<Character>) :
+class CharactersListAdapter() :
         RecyclerView.Adapter<CharactersListAdapter.CharacterViewHolder>() {
+
+    var responseResultList: ArrayList<Character> = ArrayList()
 
     var characterListRecyclerViewAdapterListener: CharacterListRecyclerViewAdapterListener? = null
 
@@ -29,7 +31,7 @@ class CharactersListAdapter(private val charactersList: ArrayList<Character>) :
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onBindViewHolder(holder: CharacterViewHolder, position: Int) {
-        val character = charactersList[position]
+        val character = responseResultList[position]
         holder.characterNameTextView.text = character.characterName
         holder.characterDescriptionTextView.text = character.characterDescription
         var characterImagePath = "${character.characterThumbnailPath}/portrait_small.${character.characterThumbnailExtension}"
@@ -47,7 +49,13 @@ class CharactersListAdapter(private val charactersList: ArrayList<Character>) :
         }
     }
 
-    override fun getItemCount() = charactersList.size
+    override fun getItemCount() = responseResultList.size
+
+    fun updateResponseList(charactersList: ArrayList<Character>) {
+        responseResultList.addAll(charactersList)
+        notifyDataSetChanged()
+        //println(responseResultList)
+    }
 }
 
 

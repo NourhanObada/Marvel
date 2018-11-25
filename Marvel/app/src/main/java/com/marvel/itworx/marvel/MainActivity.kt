@@ -18,35 +18,37 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity() : AppCompatActivity() {
 
-    private lateinit var networkManager: NetworkManager
     private lateinit var recyclerViewManager: RecyclerView.LayoutManager
-    //private lateinit var mainActivityViewModel:MainActivityViewModel
-    //private lateinit var responseCharactersList:ArrayList<Character>
+    private lateinit var mainActivityViewModel: MainActivityViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        //mainActivityViewModel = MainActivityViewModel(application)
-        //mainActivityViewModel.callNetworkManager()
-        networkManager = NetworkManager(this)
+        mainActivityViewModel = MainActivityViewModel(application)
+        mainActivityViewModel.callNetworkManager()
+        var adapter = mainActivityViewModel.setAdapter()
+        charactersRecyclerView.adapter = adapter
         recyclerViewManager = LinearLayoutManager(this)
-        callNetworkManager()
+        charactersRecyclerView.layoutManager = recyclerViewManager
         handleSearchEditText()
-
+        displayCharacter(adapter)
     }
 
-    private fun callNetworkManager() {
-        networkManager.requestListContent(
-                onSuccess = {
-                    handleOnSuccess(it)
-                }, onError = {
-            handleOnError(it)
-        })
+    private fun displayCharacter(adapter: CharactersListAdapter) {
+        adapter.characterListRecyclerViewAdapterListener = object : CharacterListRecyclerViewAdapterListener {
+            override fun onItemClick(characterID: Int) {
+                val characterActivityIntent = Intent(this@MainActivity, CharacterDetailsActivity::class.java)
+                characterActivityIntent.putExtra("Character_ID", characterID)
+                startActivity(characterActivityIntent)
+            }
+        }
     }
 
     private fun handleSearchEditText() {
+        println("HII 1")
         searchCharactersEditText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
+                println("HII 2")
                 searchForCharacter(s as CharSequence)
             }
 
@@ -60,44 +62,11 @@ class MainActivity() : AppCompatActivity() {
 
     fun searchForCharacter(searchName: CharSequence) {
         if (searchCharactersEditText.text != null && searchCharactersEditText.text.trim().toString().isNotEmpty()) {
-            networkManager.searchList(searchName,
-                    onSuccess = {
-                        handleOnSuccess(it)
-                    }, onError = {
-                handleOnError(it)
-            })
-        }else {
-            callNetworkManager()
-        }
-    }
-
-
-    private fun handleOnSuccess(charactersList: ArrayList<Character>) {
-        charactersRecyclerView.layoutManager = recyclerViewManager
-        val characterRecyclerViewAdapter = CharactersListAdapter(charactersList)
-        characterRecyclerViewAdapter.characterListRecyclerViewAdapterListener = object : CharacterListRecyclerViewAdapterListener {
-            override fun onItemClick(characterID: Int) {
-                val characterActivityIntent = Intent(this@MainActivity, CharacterDetailsActivity::class.java)
-                characterActivityIntent.putExtra("Character_ID", characterID)
-                startActivity(characterActivityIntent)
-            }
-        }
-        charactersRecyclerView.adapter = characterRecyclerViewAdapter
-        charactersRecyclerView.visibility = View.VISIBLE
-    }
-
-    private fun handleOnError(requestError: RequestError) {
-        when (requestError) {
-            RequestError.OFFLINE_ERROR,
-            RequestError.TIMEOUT_ERROR -> {
-                Toast.makeText(this, "OFFLINE OR TIMEOUT ERROR", Toast.LENGTH_SHORT).show()
-            }
-            RequestError.GENERAL_ERROR -> {
-                Toast.makeText(this, "NETWORK ERROR", Toast.LENGTH_SHORT).show()
-            }
+            //println("HII 3")
+            mainActivityViewModel.handleSearchCharacter(searchName)
+        } else {
+            //println("HII 4")
+            mainActivityViewModel.callNetworkManager()
         }
     }
 }
-
-
-
